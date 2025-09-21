@@ -10,4 +10,6 @@ mlflow ui --backend-store-uri sqlite:///mlflow.db
 
 ## Todo
 
-- [ ] Docker Compose
+- [ ] Prompt (MLFlow)
+- [ ] LiteLLM Proxy
+- [ ] Docker Compose (LiteLLM Proxy + Streamlit + MLFlow)

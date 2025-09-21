@@ -10,7 +10,7 @@ mlflow.litellm.autolog()
 
 # https://docs.streamlit.io/develop/tutorials/chat-and-llm-apps/build-conversational-apps
 
-# TODO: record user info to mlflow
+mlflow.set_experiment("LiteLLM SDK with User Info")
 
 st.title("ChatGPT-like clone (litellm SDK)")
 with st.expander("User Info"):
