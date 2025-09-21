@@ -26,3 +26,7 @@ dev = [
     "black>=25.9.0",
     "ipdb>=0.13.13",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
