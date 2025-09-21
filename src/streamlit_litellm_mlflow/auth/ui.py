@@ -55,7 +55,12 @@ def render_register_form() -> None:
         insert_user(
             username=username, name=name, email=email, hashed_password=hashed, role=role
         )
-        st.success(f"User **{username}** created. You can login now.")
+        st.success(f"User **{username}** created successfully!")
+        st.info("Redirecting to login page...")
+        # Add a small delay and redirect
+        st.balloons()
+        if st.button("Continue to Login →", type="primary"):
+            st.switch_page("pages/login.py")
 
 
 def render_change_password_form(current_username: str) -> None:
@@ -85,4 +90,11 @@ def render_change_password_form(current_username: str) -> None:
             return
         new_hash = bcrypt_hash_password(new_pw)
         update_user_password(current_username, new_hash)
-        st.success("Password updated.")
+        st.success("Password updated successfully!")
+        st.info("Please login again with your new password.")
+        # Clear session and redirect to login
+        for key in ["authentication_status", "username", "name", "email"]:
+            if key in st.session_state:
+                del st.session_state[key]
+        if st.button("Login with New Password →", type="primary"):
+            st.switch_page("pages/login.py")

@@ -9,54 +9,48 @@ from streamlit_litellm_mlflow import (
 )
 
 
-def login_page():
-    """Login page that shows when user is not authenticated."""
-    st.title("🔐 Login Required")
+def welcome_page():
+    """Welcome page that redirects to appropriate auth page."""
+    st.title("🚀 Welcome to Streamlit-LiteLLM-MLFlow")
 
-    # Initialize database and load credentials
+    # Initialize database and check if users exist
     init_db()
     creds = load_credentials()
-
-    # Check if there are any registered users
     has_users = len(creds["usernames"]) > 0
 
+    st.markdown(
+        """
+    ### 🤖 AI-Powered Chat Application
+    
+    This application provides:
+    - 🔐 **Secure Authentication** - User management with password protection
+    - 💬 **Chat Interface** - Simple and intuitive chat experience  
+    - 🚀 **LiteLLM Integration** - AI model proxy capabilities
+    - 📊 **MLFlow Tracking** - Experiment and prompt management
+    """
+    )
+
+    st.markdown("---")
+
     if has_users:
-        # Only show login form if there are users
-        authenticator = build_authenticator(creds)
-        authenticator.login(location="main", key="Login")
+        st.subheader("🔐 Access Your Account")
+        col1, col2 = st.columns([1, 1])
 
-        # Handle authentication status
-        if st.session_state.get("authentication_status"):
-            st.success(
-                f"Welcome, {st.session_state.get('name')} (@{st.session_state.get('username')})"
-            )
-            st.info("Please use the navigation menu to access application pages.")
-            authenticator.logout(
-                button_name="Logout", location="sidebar", key="Logout_main"
-            )
-        elif st.session_state.get("authentication_status") is False:
-            st.error("Invalid username or password.")
-            st.info("If you don't have an account, register below.")
-            render_register_form()
-        else:
-            st.info("Please enter your username and password.")
-            render_register_form()
+        with col1:
+            if st.button("🔑 Login", type="primary", use_container_width=True):
+                st.switch_page("pages/login.py")
+
+        with col2:
+            if st.button("📝 Create Account", use_container_width=True):
+                st.switch_page("pages/register.py")
     else:
-        # No users registered yet - only show registration
-        st.info("No users registered yet. Please create your first account below.")
-        render_register_form()
+        st.subheader("🎉 Get Started")
+        st.info("No users registered yet. Create your first account to begin!")
 
-    # Sidebar for logged-in users
-    with st.sidebar:
-        st.markdown("### Account")
-        if has_users and st.session_state.get("authentication_status"):
-            st.success(f"✅ Logged in as **{st.session_state.get('username')}**")
-            authenticator.logout("Logout", key="Logout_sidebar")
-        else:
-            st.info("Not logged in")
-
-        st.markdown("---")
-        st.caption("Password hashes are stored with bcrypt in users.db / sa_users.")
+        if st.button(
+            "📝 Create First Account", type="primary", use_container_width=True
+        ):
+            st.switch_page("pages/register.py")
 
 
 def account_page():
@@ -83,8 +77,14 @@ def account_page():
     with col2:
         st.subheader("Actions")
         if st.button("Logout", type="primary"):
-            authenticator.logout()
-            st.rerun()
+            # Clear authentication status
+            for key in ["authentication_status", "username", "name", "email"]:
+                if key in st.session_state:
+                    del st.session_state[key]
+
+            # Use st.switch_page to redirect to main page
+            # BUG: Could not find page: main.py
+            st.switch_page("main.py")
 
     st.markdown("---")
     st.subheader("Change Password")
@@ -99,14 +99,14 @@ def main():
 
     # Check authentication status
     if not st.session_state.get("authentication_status"):
-        # Show login page if not authenticated
-        login_page()
+        # Show welcome page if not authenticated
+        welcome_page()
         return
 
     # User is authenticated - show main application pages
     pages = {
-        "Chat": [
-            st.Page("auth_pages/1_Simplest_Chat.py", title="Simple Chat", icon="💬"),
+        "Application": [
+            st.Page("pages/1_Simplest_Chat.py", title="Simple Chat", icon="💬"),
         ],
         "Account": [
             st.Page(account_page, title="Account Settings", icon="⚙️"),
@@ -116,11 +116,6 @@ def main():
     pg = st.navigation(pages, position="top")
     pg.run()
 
-
-# TODO: register should redirect to login page
-# TODO: logout should redirect to login page
-# TODO: change password should redirect to login page
-# TODO: logout should redirect to main page
 
 if __name__ == "__main__":
     main()
