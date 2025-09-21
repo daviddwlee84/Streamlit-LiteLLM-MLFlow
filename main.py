@@ -10,11 +10,18 @@ if is_authenticated:
     pages = {
         "Application": [
             st.Page(
-                "pages/1_Simplest_Chat.py",
-                url_path="simplest_chat",
-                title="Simple Chat",
+                "pages/litellm_sdk.py",
+                url_path="litellm_sdk",
+                title="LiteLLM SDK",
                 icon="💬",
             ),
+            # TODO: mlflow tracing session id, user id, ...
+            # st.Page(
+            #     "pages/litellm_sdk_with_user_info.py",
+            #     url_path="litellm_sdk_with_user_info",
+            #     title="LiteLLM SDK with User Info",
+            #     icon="💬",
+            # ),
         ],
         "Account": [
             st.Page(

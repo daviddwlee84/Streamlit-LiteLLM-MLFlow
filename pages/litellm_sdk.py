@@ -11,12 +11,25 @@ mlflow.litellm.autolog()
 # TODO: record user info to mlflow
 
 st.title("ChatGPT-like clone (litellm SDK)")
+with st.expander("User Info"):
+    st.write(st.session_state.get("authentication_status"))
+    st.write(st.session_state.get("username"))
+    st.write(st.session_state.get("name"))
+    st.write(st.session_state.get("email"))
 
 if "model" not in st.session_state:
     st.session_state["model"] = st.secrets.get("LITELLM_MODEL", "openai/gpt-4o-mini")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
+
+
+def clear_messages():
+    st.session_state.messages.clear()
+    st.toast("Messages cleared.")
+
+
+st.button("Clear Messages", on_click=clear_messages)
 
 # 回放歷史訊息
 for message in st.session_state.messages:
