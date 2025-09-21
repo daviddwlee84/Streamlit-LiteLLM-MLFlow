@@ -47,5 +47,4 @@ def welcome_page():
             st.switch_page("pages/register.py")
 
 
-if __name__ == "__main__":
-    welcome_page()
+welcome_page()

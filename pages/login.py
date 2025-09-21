@@ -53,5 +53,4 @@ def main():
             st.switch_page("pages/register.py")
 
 
-if __name__ == "__main__":
-    main()
+main()

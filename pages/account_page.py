@@ -38,12 +38,11 @@ def account_page():
                     del st.session_state[key]
 
             # Use st.switch_page to redirect to main page
-            st.switch_page("pages/welcome_page.py")
+            st.switch_page("main.py")
 
     st.markdown("---")
     st.subheader("Change Password")
     render_change_password_form(st.session_state.get("username"))
 
 
-if __name__ == "__main__":
-    account_page()
+account_page()

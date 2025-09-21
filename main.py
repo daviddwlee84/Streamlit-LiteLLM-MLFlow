@@ -11,10 +11,20 @@ if not st.session_state.get("authentication_status"):
 # User is authenticated - show main application pages
 pages = {
     "Application": [
-        st.Page("pages/1_Simplest_Chat.py", title="Simple Chat", icon="💬"),
+        st.Page(
+            "pages/1_Simplest_Chat.py",
+            # url_path="simplest_chat",
+            title="Simple Chat",
+            icon="💬",
+        ),
     ],
     "Account": [
-        st.Page("pages/account_page.py", title="Account Settings", icon="⚙️"),
+        st.Page(
+            "pages/account_page.py",
+            # url_path="account_page",
+            title="Account Settings",
+            icon="⚙️",
+        ),
     ],
 }
 
