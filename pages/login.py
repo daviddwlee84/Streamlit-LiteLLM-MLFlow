@@ -38,8 +38,6 @@ def main():
     if st.session_state.get("authentication_status"):
         st.success(f"Welcome back, {st.session_state.get('name')}!")
         st.info("Redirecting to application...")
-        # Redirect to main page after successful login
-        st.switch_page("main.py")
     elif st.session_state.get("authentication_status") is False:
         st.error("Invalid username or password.")
     else:

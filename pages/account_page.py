@@ -31,14 +31,7 @@ def account_page():
 
     with col2:
         st.subheader("Actions")
-        if st.button("Logout", type="primary"):
-            # Clear authentication status
-            for key in ["authentication_status", "username", "name", "email"]:
-                if key in st.session_state:
-                    del st.session_state[key]
-
-            # Use st.switch_page to redirect to main page
-            st.switch_page("main.py")
+        authenticator.logout(location="main", key="Logout")
 
     st.markdown("---")
     st.subheader("Change Password")
