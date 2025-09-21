@@ -15,13 +15,12 @@ if is_authenticated:
                 title="LiteLLM SDK",
                 icon="💬",
             ),
-            # TODO: mlflow tracing session id, user id, ...
-            # st.Page(
-            #     "pages/litellm_sdk_with_user_info.py",
-            #     url_path="litellm_sdk_with_user_info",
-            #     title="LiteLLM SDK with User Info",
-            #     icon="💬",
-            # ),
+            st.Page(
+                "pages/litellm_sdk_with_user_info.py",
+                url_path="litellm_sdk_with_user_info",
+                title="LiteLLM SDK with User Info",
+                icon="💬",
+            ),
         ],
         "Account": [
             st.Page(
