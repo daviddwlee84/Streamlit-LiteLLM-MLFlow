@@ -1,0 +1,28 @@
+[project]
+name = "streamlit-litellm-mlflow"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "bcrypt>=4.3.0",
+    "boto3>=1.40.35",
+    "httpx[socks]>=0.28.1",
+    "litellm[mlflow]>=1.77.3",
+    "python-dotenv>=1.1.1",
+    "streamlit-authenticator>=0.4.2",
+    "streamlit[auth]>=1.49.1",
+    "watchdog>=6.0.0",
+]
+
+[tool.uv]
+index-url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"
+
+[[tool.uv.index]]
+url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"
+
+[dependency-groups]
+dev = [
+    "black>=25.9.0",
+    "ipdb>=0.13.13",
+]
