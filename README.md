@@ -26,7 +26,13 @@ curl -X POST 'http://localhost:4000/chat/completions' \
         "role": "user",
         "content": "what is your name?"
       }
-    ]
+    ],
+    "litellm_metadata": {
+      "tags": [
+        "mlflow.trace.user:user_42",
+        "mlflow.trace.session:sess_2025-09-22_A"
+      ]
+    }
 }'
 
 # https://docs.litellm.ai/docs/proxy/model_management#usage

@@ -11,6 +11,7 @@ mlflow.litellm.autolog()
 mlflow.set_experiment("LiteLLM SDK")
 
 st.title("ChatGPT-like clone (litellm SDK)")
+st.caption("NOTE: The simplest example without any additional settings")
 with st.expander("User Info"):
     st.write(st.session_state.get("authentication_status"))
     st.write(st.session_state.get("username"))

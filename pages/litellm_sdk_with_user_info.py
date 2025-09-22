@@ -13,6 +13,7 @@ mlflow.litellm.autolog()
 mlflow.set_experiment("LiteLLM SDK with User Info")
 
 st.title("ChatGPT-like clone (litellm SDK)")
+st.caption("NOTE: we try log user and session info to MLFlow")
 with st.expander("User Info"):
     st.write(st.session_state.get("authentication_status"))
     st.write(st.session_state.get("username"))
@@ -44,22 +45,21 @@ for message in st.session_state.messages:
 
 
 # https://mlflow.org/docs/latest/genai/tracing/track-users-sessions/
+# https://mlflow.org/docs/latest/genai/tracing/lightweight-sdk/
+# https://mlflow.org/docs/latest/genai/tracing/prod-tracing/
 @mlflow.trace(name="litellm_sdk_with_user_info")
 def stream_litellm(messages: list[dict], model: str, user_id: str, session_id: str):
     # litellm 的 streaming 會 yield OpenAI 風格的 chunk
-    # username = st.session_state.get("username")
-    # email = st.session_state.get("email")
-    # auth_status = st.session_state.get("authentication_status")
-    # session_id = st.session_state.get("session_id")
-    # client_request_id = str(uuid4())
-    # user_id = username or email or "anonymous"
-
     # Add user and session context to the current trace
     mlflow.update_current_trace(
+        tags={
+            "username": st.session_state.get("username"),
+            "email": st.session_state.get("email"),
+        },
         metadata={
             "mlflow.trace.user": user_id,  # Links trace to specific user
             "mlflow.trace.session": session_id,  # Groups trace with conversation
-        }
+        },
     )
 
     # Your chat logic here
