@@ -30,7 +30,13 @@ if is_authenticated:
             st.Page(
                 "pages/litellm_multimodal_proxy_with_sdk.py",
                 url_path="litellm_multimodal_proxy_with_sdk",
-                title="LiteLLM Multimodal (Proxy + SDK) with MLFlow autolog",
+                title="LiteLLM Multimodal Global Image (Proxy + SDK) with MLFlow autolog",
+                icon="💬",
+            ),
+            st.Page(
+                "pages/litellm_multimodal_proxy_with_sdk_chat.py",
+                url_path="litellm_multimodal_proxy_with_sdk_chat",
+                title="LiteLLM Multimodal Chat Image (Proxy + SDK) with MLFlow autolog",
                 icon="💬",
             ),
         ],

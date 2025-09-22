@@ -13,10 +13,12 @@ mlflow.litellm.autolog()
 
 # https://docs.streamlit.io/develop/tutorials/chat-and-llm-apps/build-conversational-apps
 
-mlflow.set_experiment("LiteLLM Multimodal (Proxy + SDK) with MLFlow autolog")
+mlflow.set_experiment("LiteLLM Multimodal Chat Image (Proxy + SDK) with MLFlow autolog")
 
-st.title("ChatGPT-like clone (litellm Multimodal (Proxy + SDK) with MLFlow autolog)")
-st.caption("NOTE: Log to MLFlow with MLFlow autolog (Global Image)")
+st.title(
+    "ChatGPT-like clone (litellm Multimodal Chat Image (Proxy + SDK) with MLFlow autolog)"
+)
+st.caption("NOTE: Log to MLFlow with MLFlow autolog")
 
 valid_models = get_valid_models(
     check_provider_endpoint=True, custom_llm_provider="litellm_proxy"
@@ -24,16 +26,6 @@ valid_models = get_valid_models(
 
 
 st.session_state["model"] = st.selectbox("Select Model", valid_models)
-
-# Image upload functionality
-st.subheader("Upload Image (Optional)")
-uploaded_file = st.file_uploader(
-    "Choose an image file", type=["png", "jpg", "jpeg", "gif", "webp"]
-)
-
-# Display uploaded image if any
-if uploaded_file is not None:
-    st.image(uploaded_file, caption="Uploaded Image")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -89,7 +81,9 @@ for message in st.session_state.messages:
                 if item["type"] == "text":
                     st.markdown(item["text"])
                 elif item["type"] == "image_url":
-                    st.image(item["image_url"]["url"], use_column_width=True)
+                    st.image(
+                        item["image_url"]["url"], caption="Uploaded Image", width=200
+                    )
         else:
             # Handle text-only content
             st.markdown(message["content"])
@@ -135,28 +129,35 @@ def stream_litellm(
 
 
 # 輸入與串流輸出
-if prompt := st.chat_input("What is up?"):
+if prompt := st.chat_input(
+    "What is up?", accept_file=True, file_type=["png", "jpg", "jpeg", "gif", "webp"]
+):
+
     # Process uploaded image if any
-    image_url = process_uploaded_image(uploaded_file) if uploaded_file else None
+    image_url = (
+        process_uploaded_image(prompt["files"][0])
+        if "files" in prompt and len(prompt["files"]) > 0
+        else None
+    )
 
     # Create message content based on whether there's an image
     if image_url:
         # Multimodal message with text and image
         message_content = [
-            {"type": "text", "text": prompt},
+            {"type": "text", "text": prompt.text},
             {"type": "image_url", "image_url": {"url": image_url}},
         ]
         st.session_state.messages.append({"role": "user", "content": message_content})
 
         # Display user message with image
         with st.chat_message("user"):
-            st.markdown(prompt)
+            st.markdown(prompt.text)
             st.image(image_url, caption="Uploaded Image", width=200)
     else:
         # Text-only message
-        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.session_state.messages.append({"role": "user", "content": prompt.text})
         with st.chat_message("user"):
-            st.markdown(prompt)
+            st.markdown(prompt.text)
 
     with st.chat_message("assistant"):
         # Process messages for completion call - handle multimodal content
