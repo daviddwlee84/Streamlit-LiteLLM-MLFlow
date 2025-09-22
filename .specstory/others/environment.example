@@ -1,0 +1,18 @@
+# AWS Credentials for Bedrock
+AWS_ACCESS_KEY_ID=your_aws_access_key_id
+AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
+AWS_REGION_NAME=us-east-1
+
+# OpenAI API Key
+OPENAI_API_KEY=sk-your-openai-api-key
+
+# Gemini API Key
+GEMINI_API_KEY=your-gemini-api-key
+
+# Optional: Streamlit Auth Cookie Key
+SA_COOKIE_KEY=streamlit-auth-demo-key-2024-secure-random
+
+# Optional: Custom ports (if you want to change defaults)
+# STREAMLIT_PORT=8501
+# LITELLM_PORT=4000
+# MLFLOW_PORT=5000

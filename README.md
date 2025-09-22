@@ -44,5 +44,6 @@ curl -X GET "http://localhost:4000/model/info" \
 ## Todo
 
 - [ ] Prompt (MLFlow)
-- [ ] LiteLLM Proxy
-- [ ] Docker Compose (LiteLLM Proxy + Streamlit + MLFlow)
+- [x] LiteLLM Proxy
+- [x] Docker Compose (LiteLLM Proxy + Streamlit + MLFlow)
+- [ ] Load history messages from MLFlow

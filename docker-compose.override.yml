@@ -1,0 +1,24 @@
+# Docker Compose 覆蓋配置 - 用於開發環境
+# 這個文件會自動被 docker-compose 讀取，不需要在命令中指定
+
+services:
+  streamlit:
+    # 開發時掛載源代碼，這樣可以實時重新載入
+    volumes:
+      - .:/app
+      - ./users.db:/app/users.db
+      - ./mlflow.db:/app/mlflow.db
+    # 開發時使用較少的安全限制
+    user: root
+    environment:
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+
+  # 開發時可以添加額外的日誌配置
+  litellm:
+    environment:
+      - LITELLM_LOG_LEVEL=DEBUG
+
+  mlflow:
+    environment:
+      - MLFLOW_DEBUG=true

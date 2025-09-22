@@ -1,0 +1,73 @@
+services:
+  streamlit:
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./users.db:/app/users.db
+      - ./mlflow.db:/app/mlflow.db
+    depends_on:
+      - litellm
+      - mlflow
+    environment:
+      - LITELLM_API_BASE=http://litellm:4000
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./litellm_config.yaml:/app/litellm_config.yaml
+    command: ["--config", "/app/litellm_config.yaml", "--port", "4000", "--host", "0.0.0.0"]
+    environment:
+      # AWS credentials (如果需要)
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION_NAME=${AWS_REGION_NAME}
+      # OpenAI API Key
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # Gemini API Key
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health/readiness"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=sqlite:///mlflow.db
+      - MLFLOW_ARTIFACT_STORE=mlruns
+    volumes:
+      - ./mlflow.db:/mlflow.db
+      - ./mlruns:/mlruns
+    command: ["mlflow", "server", "--host", "0.0.0.0", "--port", "5000"]
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mlruns:
+  mlflow-db:
+  users-db:
