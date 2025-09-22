@@ -1,0 +1,128 @@
+# https://docs.litellm.ai/docs/proxy/prod
+# NOTE: for non-production mode of LiteLLM it will use load_dotenv to load our .env file
+
+# 先在頂部定義可重用的錨點（anchor）
+aws_common: &aws_common
+  aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+  aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+  aws_region_name: os.environ/AWS_REGION_NAME
+
+openai_key: &openai_key
+  api_key: os.environ/OPENAI_API_KEY
+
+gemini_key: &gemini_key
+  api_key: os.environ/GEMINI_API_KEY
+
+model_list:
+  # https://docs.litellm.ai/docs/providers/bedrock
+  - model_name: bedrock-nova-pro
+    litellm_params:
+      model: bedrock/amazon.nova-pro-v1:0
+      <<: *aws_common
+
+  - model_name: bedrock-claude-3-7
+    litellm_params:
+      model: bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0
+      <<: *aws_common
+
+  - model_name: bedrock-claude-3-5-haiku
+    litellm_params:
+      model: bedrock/us.anthropic.claude-3-5-haiku-20241022-v1:0
+      <<: *aws_common
+
+  - model_name: gemini-2.0-flash-exp
+    litellm_params:
+      model: gemini/gemini-2.0-flash-exp
+      <<: *gemini_key
+
+  - model_name: gpt-4o
+    litellm_params:
+      model: openai/gpt-4o
+      <<: *openai_key
+
+  # - model_name: gpt-4o ### RECEIVED MODEL NAME ###
+  #   litellm_params: # all params accepted by litellm.completion() - https://docs.litellm.ai/docs/completion/input
+  #     model: azure/gpt-4o-eu ### MODEL NAME sent to `litellm.completion()` ###
+  #     api_base: https://my-endpoint-europe-berri-992.openai.azure.com/
+  #     api_key: "os.environ/AZURE_API_KEY_EU" # does os.getenv("AZURE_API_KEY_EU")
+  #     rpm: 6      # [OPTIONAL] Rate limit for this deployment: in requests per minute (rpm)
+  # - model_name: bedrock-claude-v1 
+  #   litellm_params:
+  #     model: bedrock/anthropic.claude-instant-v1
+  # - model_name: gpt-4o
+  #   litellm_params:
+  #     model: azure/gpt-4o-ca
+  #     api_base: https://my-endpoint-canada-berri992.openai.azure.com/
+  #     api_key: "os.environ/AZURE_API_KEY_CA"
+  #     rpm: 6
+  # - model_name: anthropic-claude
+  #   litellm_params: 
+  #     model: bedrock/anthropic.claude-instant-v1
+  #     ### [OPTIONAL] SET AWS REGION ###
+  #     aws_region_name: us-east-1
+  # - model_name: vllm-models
+  #   litellm_params:
+  #     model: openai/facebook/opt-125m # the `openai/` prefix tells litellm it's openai compatible
+  #     api_base: http://0.0.0.0:4000/v1
+  #     api_key: none
+  #     rpm: 1440
+  #   model_info: 
+  #     version: 2
+  
+  # Use this if you want to make requests to `claude-3-haiku-20240307`,`claude-3-opus-20240229`,`claude-2.1` without defining them on the config.yaml
+  # Default models
+  # Works for ALL Providers and needs the default provider credentials in .env
+  - model_name: "*" 
+    litellm_params:
+      model: "*"
+
+litellm_settings: # module level litellm settings - https://github.com/BerriAI/litellm/blob/main/litellm/__init__.py
+  drop_params: True
+  # success_callback: ["langfuse"] # OPTIONAL - if you want to start sending LLM Logs to Langfuse. Make sure to set `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` in your env
+  success_callback: ["mlflow"]
+  failure_callback: ["mlflow"]
+  # https://github.com/BerriAI/litellm/blob/be193fbffd5d41a8bb8edd2cbf8e73b925a6a12c/litellm/__init__.py#L114-L153
+  # _custom_logger_compatible_callbacks_literal = Literal[
+  #     "lago",
+  #     "openmeter",
+  #     "logfire",
+  #     "literalai",
+  #     "dynamic_rate_limiter",
+  #     "dynamic_rate_limiter_v3",
+  #     "langsmith",
+  #     "prometheus",
+  #     "otel",
+  #     "datadog",
+  #     "datadog_llm_observability",
+  #     "galileo",
+  #     "braintrust",
+  #     "arize",
+  #     "arize_phoenix",
+  #     "langtrace",
+  #     "gcs_bucket",
+  #     "azure_storage",
+  #     "opik",
+  #     "argilla",
+  #     "mlflow",
+  #     "langfuse",
+  #     "langfuse_otel",
+  #     "pagerduty",
+  #     "humanloop",
+  #     "gcs_pubsub",
+  #     "agentops",
+  #     "anthropic_cache_control_hook",
+  #     "generic_api",
+  #     "resend_email",
+  #     "smtp_email",
+  #     "deepeval",
+  #     "s3_v2",
+  #     "aws_sqs",
+  #     "vector_store_pre_call_hook",
+  #     "dotprompt",
+  #     "cloudzero",
+  #     "posthog",
+  # ]
+
+general_settings: 
+  master_key: sk-1234 # [OPTIONAL] Only use this if you to require all calls to contain this key (Authorization: Bearer sk-1234)
+#   # alerting: ["slack"] # [OPTIONAL] If you want Slack Alerts for Hanging LLM requests, Slow llm responses, Budget Alerts. Make sure to set `SLACK_WEBHOOK_URL` in your env
