@@ -2,23 +2,17 @@ from uuid import uuid4
 import streamlit as st
 from litellm import completion, get_valid_models
 from dotenv import load_dotenv, find_dotenv
-import mlflow
+import mlflow.litellm
 
 load_dotenv(find_dotenv())
-
-# TODO: not sure how will it behave when we use LiteLLM Proxy Callback
-mlflow.set_experiment("LiteLLM Proxy with SDK")
+mlflow.litellm.autolog()
 
 # https://docs.streamlit.io/develop/tutorials/chat-and-llm-apps/build-conversational-apps
 
-st.title("ChatGPT-like clone (litellm Proxy with SDK)")
-st.caption("NOTE: we try to log to MLFlow using LiteLLM Proxy Callback")
+mlflow.set_experiment("LiteLLM Multimodal (Proxy + SDK) with MLFlow autolog")
 
-with st.expander("User Info"):
-    st.write(st.session_state.get("authentication_status"))
-    st.write(st.session_state.get("username"))
-    st.write(st.session_state.get("name"))
-    st.write(st.session_state.get("email"))
+st.title("ChatGPT-like clone (litellm Multimodal (Proxy + SDK) with MLFlow autolog)")
+st.caption("NOTE: Log to MLFlow with MLFlow autolog")
 
 valid_models = get_valid_models(
     check_provider_endpoint=True, custom_llm_provider="litellm_proxy"
@@ -48,6 +42,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 
+@mlflow.trace
 def stream_litellm(
     messages: list[dict],
     model: str,
@@ -57,18 +52,18 @@ def stream_litellm(
     # https://docs.litellm.ai/docs/proxy/logging#mlflow
     # https://docs.litellm.ai/docs/observability/mlflow#adding-tags-for-better-tracing
 
+    mlflow.update_current_trace(
+        metadata={
+            "mlflow.trace.user": user_id,  # Links trace to specific user
+            "mlflow.trace.session": session_id,  # Groups trace with conversation
+        },
+    )
+
     # litellm 的 streaming 會 yield OpenAI 風格的 chunk
     resp = completion(
         model=model,
         messages=messages,
         stream=True,
-        # BUG: this will only record to request_tags instead of trace_tags
-        metadata={
-            "tags": [
-                f"mlflow.trace.user:{user_id}",
-                f"mlflow.trace.session:{session_id}",
-            ]
-        },
     )
 
     full = ""
@@ -82,9 +77,7 @@ def stream_litellm(
         if delta:
             full += delta
             yield delta
-    # ValueError: Model is None and does not exist in passed completion_response. Passed completion_response=<litellm.litellm_core_utils.streaming_handler.CustomStreamWrapper object at 0x1438337d0>, model=None
-    # Exception: This model isn't mapped yet. model=litellm_proxy/bedrock-claude-3-7, custom_llm_provider=litellm_proxy. Add it here - https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json.
-    # st.toast(f"Response cost (full): {completion_cost(resp, model=model, prompt=full)}")
+
     return full  # 讓 st.write_stream 拿到完整字串
 
 

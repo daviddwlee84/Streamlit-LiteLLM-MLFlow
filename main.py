@@ -27,6 +27,12 @@ if is_authenticated:
                 title="LiteLLM Proxy with SDK",
                 icon="💬",
             ),
+            st.Page(
+                "pages/litellm_multimodal_proxy_with_sdk.py",
+                url_path="litellm_multimodal_proxy_with_sdk",
+                title="LiteLLM Multimodal (Proxy + SDK) with MLFlow autolog",
+                icon="💬",
+            ),
         ],
         "Account": [
             st.Page(
