@@ -1,5 +1,5 @@
 import streamlit as st
-from litellm import completion
+from litellm import completion, completion_cost
 from dotenv import load_dotenv, find_dotenv
 import mlflow.litellm
 
@@ -40,6 +40,11 @@ for message in st.session_state.messages:
 def stream_litellm(messages: list[dict], model: str):
     # litellm 的 streaming 會 yield OpenAI 風格的 chunk
     resp = completion(model=model, messages=messages, stream=True)
+
+    # NOTE: since we are using stream=True, we need to use completion_cost with the full response
+    # https://docs.litellm.ai/docs/completion/token_usage
+    # st.toast(f"Response cost: {resp._hidden_params['response_cost']}")
+
     full = ""
     for chunk in resp:
         delta = ""
@@ -51,6 +56,8 @@ def stream_litellm(messages: list[dict], model: str):
         if delta:
             full += delta
             yield delta
+    # ValueError: Model is None and does not exist in passed completion_response. Passed completion_response=<litellm.litellm_core_utils.streaming_handler.CustomStreamWrapper object at 0x1438337d0>, model=None
+    st.toast(f"Response cost (full): {completion_cost(resp, model=model, prompt=full)}")
     return full  # 讓 st.write_stream 拿到完整字串
 
 

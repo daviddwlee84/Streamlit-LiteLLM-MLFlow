@@ -1,5 +1,5 @@
 import streamlit as st
-from litellm import completion
+from litellm import completion, completion_cost
 from dotenv import load_dotenv, find_dotenv
 import mlflow.litellm
 import mlflow
@@ -87,6 +87,8 @@ def stream_litellm(messages: list[dict], model: str, user_id: str, session_id: s
         if delta:
             full += delta
             yield delta
+
+    # TODO: tracing cost to MLFlow
     return full  # 讓 st.write_stream 拿到完整字串
 
 
