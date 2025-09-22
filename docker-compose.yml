@@ -16,6 +16,7 @@ services:
       - app-network
     restart: unless-stopped
 
+  # Somehow not stable (keep crashing)
   litellm:
     image: ghcr.io/berriai/litellm:main-stable
     ports:
@@ -42,6 +43,10 @@ services:
       retries: 3
       start_period: 40s
 
+  # TODO: use MinIO for artifact store & Postgres for backend store
+  # BUG: mlflow-1     | 2025/09/22 10:58:37 WARNING mlflow.store.db.utils: SQLAlchemy engine could not be created. The following exception is caught.
+  # mlflow-1     | (sqlite3.OperationalError) unable to open database file
+  # => if hte mlflow.db not exists, it will create a "folder" in the name of it
   mlflow:
     image: ghcr.io/mlflow/mlflow:latest
     ports:
