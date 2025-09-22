@@ -21,6 +21,12 @@ if is_authenticated:
                 title="LiteLLM SDK with User Info",
                 icon="💬",
             ),
+            st.Page(
+                "pages/litellm_proxy_with_sdk.py",
+                url_path="litellm_proxy_with_sdk",
+                title="LiteLLM Proxy with SDK",
+                icon="💬",
+            ),
         ],
         "Account": [
             st.Page(
