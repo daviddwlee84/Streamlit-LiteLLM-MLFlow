@@ -28,6 +28,7 @@ env
 ENV
 env.bak
 venv.bak
+.venv
 
 # IDE
 .vscode
@@ -52,7 +53,8 @@ Thumbs.db
 environment.local
 
 # Documentation
-*.md
+# pyproject.toml requires README.md
+# *.md
 docs/
 
 # Testing
@@ -60,8 +62,10 @@ tests/
 test_*.py
 
 # Development files
+# pyproject.toml is needed for UV installation?!
+# Keep these files for Docker build
 uv.lock
-pyproject.toml
+# pyproject.toml
 requirements*.txt
 
 # Temporary files

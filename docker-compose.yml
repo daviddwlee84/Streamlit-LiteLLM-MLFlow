@@ -45,7 +45,7 @@ services:
   mlflow:
     image: ghcr.io/mlflow/mlflow:latest
     ports:
-      - "5000:5000"
+      - "15000:5000"
     environment:
       - MLFLOW_BACKEND_STORE_URI=sqlite:///mlflow.db
       - MLFLOW_ARTIFACT_STORE=mlruns

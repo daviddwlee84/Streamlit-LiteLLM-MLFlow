@@ -1,4 +1,4 @@
-# 使用 Python 3.12 slim 鏡像作為基礎
+# 使用官方 Python 3.12 作為基礎映像
 FROM python:3.12-slim
 
 # 設定工作目錄
@@ -17,23 +17,18 @@ RUN apt-get update && apt-get install -y \
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
-
-ENV UV_SYSTEM_PYTHON=1
-
-# https://docs.astral.sh/uv/guides/integration/docker/#installing-a-project_1
-# 複製依賴文件（第一層緩存）
+# 複製依賴文件
+COPY requirements.txt .
 COPY pyproject.toml .
+COPY uv.lock .
 
-# 安裝 Python 依賴（第二層緩存）
-RUN uv pip install -r pyproject.toml
+# 安裝 Python 依賴
+RUN pip install --no-cache-dir -r requirements.txt -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
 
-# 複製應用程式代碼（第三層，經常變更）
-# COPY main.py .
-# COPY src/ ./src/
-# COPY .streamlit/ ./.streamlit/
-COPY . .
-RUN uv pip install -e .
+# 複製應用程式代碼
+COPY main.py .
+COPY src/ ./src/
+COPY .streamlit/ ./.streamlit/
 
 # 創建非 root 用戶
 RUN useradd --create-home --shell /bin/bash streamlit
