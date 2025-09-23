@@ -1,0 +1,141 @@
+services:
+  streamlit:
+    build: .
+    ports:
+      - "8501:8501"
+    depends_on:
+      - litellm
+      - mlflow
+    environment:
+      - LITELLM_API_BASE=http://litellm:4000
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./litellm_config.yaml:/app/litellm_config.yaml
+    command: ["--config", "/app/litellm_config.yaml", "--port", "4000", "--host", "0.0.0.0"]
+    env_file:
+      - .env
+    environment:
+      # AWS credentials (如果需要)
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION_NAME=${AWS_REGION_NAME}
+      # OpenAI API Key
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # Gemini API Key
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health/readiness"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: mlflow
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mlflow-postgres}
+      POSTGRES_DB: mlflow
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U mlflow -d mlflow
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    command: server --console-address ":9001" /data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-mlflow-minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-mlflow-minio}
+    volumes:
+      - minio:/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -fsS http://127.0.0.1:9000/minio/health/live || exit 1
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 15s
+    ports:
+      - 9000:9000
+      - 9001:9001
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  createbucket:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MC_HOST_local: http://${MINIO_ROOT_USER:-mlflow-minio}:${MINIO_ROOT_PASSWORD:-mlflow-minio}@minio:9000
+    # ENTRYPOINT 仍是預設的 "mc"
+    command:
+      - mb
+      - -p
+      - local/mlflow
+    networks:
+      - app-network
+    restart: no
+
+  mlflow:
+    image: bitnami/mlflow:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      createbucket:
+        condition: service_completed_successfully
+    ports:
+      - 5000:5000
+    environment:
+      # 讓 MLflow 透過 S3 相容端點（MinIO）上傳/下載 artifacts
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-mlflow-minio}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-mlflow-minio}
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+    command:
+      - -m
+      - mlflow
+      - server
+      - --host
+      - 0.0.0.0
+      - --port
+      - "5000"
+      - --backend-store-uri
+      - postgresql+psycopg2://mlflow:${POSTGRES_PASSWORD:-mlflow-postgres}@postgres:5432/mlflow
+      - --serve-artifacts
+      - --artifacts-destination
+      - s3://mlflow
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  pgdata: {}
+  minio: {}
