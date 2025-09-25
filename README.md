@@ -47,6 +47,9 @@ curl -X GET "http://localhost:4000/model/info" \
 - [x] LiteLLM Proxy
 - [x] Docker Compose (LiteLLM Proxy + Streamlit + MLFlow)
 - [ ] Load history messages from MLFlow
+- [ ] User login DB reuse MLFlow's Postgres?!
+- [ ] LiteLLM backend use Postgres too (instead just a `config.yaml`)
+- [ ] OpenAI Responses API (LiteLLM Responses API)
 
 ---
 
